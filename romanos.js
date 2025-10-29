@@ -1,138 +1,110 @@
-﻿// Importamos Express para crear la API
-const express = require('express');
+﻿const express = require('express');
 const app = express();
-const port = 3000;
 
-// --- Funciones de Conversión ---
+// Definición de las constantes de conversión (Necesario para las funciones)
+const ROMAN_MAP = new Map([
+    [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'],
+    [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'],
+    [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']
+]);
 
-/**
- * Convierte un número arábigo (1 a 3999) a romano.
- * @param {number} arabicNumber - El número arábigo.
- * @returns {string} El número romano o un mensaje de error.
- */
-function arabicToRoman(arabicNumber) {
-    // 1. Manejo de rango y validación
-    if (arabicNumber < 1 || arabicNumber > 3999) {
-        return 'El número debe estar entre 1 y 3999.';
+// Función de Conversión Arábigo a Romano (Implementación Corregida)
+function arabicToRoman(arabic) {
+    if (typeof arabic !== 'number' || arabic <= 0 || arabic > 3999 || !Number.isInteger(arabic)) {
+        throw new Error("El número debe ser un entero entre 1 y 3999.");
     }
 
-    // 2. Mapa de valores (clave para la conversión eficiente)
-    const map = [
-        [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'],
-        [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'],
-        [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']
-    ];
-
-    let result = '';
-    let num = arabicNumber;
-
-    // 3. Algoritmo greedy: Restar el valor más grande posible
-    for (const [value, symbol] of map) {
-        while (num >= value) {
-            result += symbol;
-            num -= value;
+    let roman = '';
+    for (const [value, symbol] of ROMAN_MAP.entries()) {
+        while (arabic >= value) {
+            roman += symbol;
+            arabic -= value;
         }
     }
-
-    return result;
+    return roman;
 }
 
-/**
- * Convierte un número romano a arábigo.
- * Se utiliza una expresión regular para la validación estricta de formato romano.
- * @param {string} romanNumber - El número romano (ej: 'MCMXCIV').
- * @returns {number|string} El número arábigo o un mensaje de error.
- */
-function romanToArabic(romanNumber) {
-    if (!romanNumber || typeof romanNumber !== 'string') {
-        return 'Formato romano inválido.';
+// Función de Conversión Romano a Arábigo (Implementación Corregida)
+function romanToArabic(roman) {
+    if (typeof roman !== 'string' || roman.length === 0) {
+        throw new Error("La entrada debe ser una cadena de texto no vacía.");
     }
-
-    const roman = romanNumber.toUpperCase();
-
-    // Expresión regular que valida la sintaxis romana (hasta 3999, rechazando patrones como IIII, VX, etc.)
-    const romanRegex = /^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/;
-
+    
+    // Regla de validación (Regex para asegurar que es un romano válido)
+    const romanRegex = /^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/i;
     if (!romanRegex.test(roman)) {
-        return 'Formato romano inválido.';
+        throw new Error("El formato del número romano es inválido o excede el rango.");
     }
 
-    // Mapa de valores individuales
-    const map = {
+    const ROMAN_VALUES = {
         'I': 1, 'V': 5, 'X': 10, 'L': 50,
         'C': 100, 'D': 500, 'M': 1000
     };
 
-    let result = 0;
-
-    // Iterar sobre la cadena, verificando la regla de sustracción
+    let arabic = 0;
     for (let i = 0; i < roman.length; i++) {
-        const currentVal = map[roman[i]];
-        const nextVal = map[roman[i + 1]];
+        const current = ROMAN_VALUES[roman[i]];
+        const next = ROMAN_VALUES[roman[i + 1]];
 
-        // Regla de substracción: Si el valor actual es menor que el siguiente (ej: I antes de V)
-        if (nextVal && currentVal < nextVal) {
-            result += nextVal - currentVal;
-            i++; // Saltar el siguiente carácter, ya que se procesó en esta iteración.
+        if (next > current) {
+            arabic += (next - current);
+            i++; 
         } else {
-            result += currentVal;
+            arabic += current;
         }
     }
-
-    return result;
+    return arabic;
 }
 
-// --- API Endpoints con Express ---
+// --- Endpoints de la API ---
 
-// Conversión Arábigo a Romano (Endpoint /a2r)
+// Endpoint para Arábigo a Romano
 app.get('/a2r', (req, res) => {
-    // 1. Intenta convertir el parámetro de string a número
-    const arabic = parseInt(req.query.arabic);
-
-    // 2. Validación de presencia y formato
-    if (isNaN(arabic) || req.query.arabic === undefined) {
-        return res.status(400).send({ error: 'Parámetro "arabic" es requerido y debe ser un número.' });
+    const arabic = parseInt(req.query.arabic, 10);
+    
+    // 1. Validar que es un número
+    if (isNaN(arabic)) {
+        return res.status(400).json({ error: "El parámetro 'arabic' debe ser un número." });
     }
 
-    // 3. Llamada a la lógica central
-    const roman = arabicToRoman(arabic);
-
-    // 4. Manejo de error de rango (retornado por arabicToRoman)
-    if (typeof roman === 'string' && roman.includes('debe estar entre')) {
-        return res.status(400).send({ error: roman });
+    // 2. Ejecutar la conversión y manejar errores de rango/tipo
+    try {
+        const roman = arabicToRoman(arabic);
+        res.status(200).json({ roman: roman });
+    } catch (e) {
+        res.status(400).json({ error: e.message });
     }
-
-    // 5. Respuesta exitosa
-    return res.status(200).send({ roman: roman });
 });
 
-// Conversión Romano a Arábigo (Endpoint /r2a)
+// Endpoint para Romano a Arábigo
 app.get('/r2a', (req, res) => {
-    const roman = req.query.roman;
+    const roman = req.query.roman ? req.query.roman.toUpperCase() : '';
 
-    // 1. Validación de presencia
+    // 1. Validar que existe el parámetro
     if (!roman) {
-        return res.status(400).send({ error: 'Parámetro "roman" es requerido.' });
+        return res.status(400).json({ error: "El parámetro 'roman' no debe estar vacío." });
     }
 
-    // 2. Llamada a la lógica central
-    const arabic = romanToArabic(roman);
-
-    // 3. Manejo de error de formato (retornado por romanToArabic)
-    if (typeof arabic === 'string' && arabic.includes('inválido')) {
-        return res.status(400).send({ error: arabic });
+    // 2. Ejecutar la conversión y manejar errores de formato/rango
+    try {
+        const arabic = romanToArabic(roman);
+        res.status(200).json({ arabic: arabic });
+    } catch (e) {
+        res.status(400).json({ error: e.message });
     }
-
-    // 4. Respuesta exitosa
-    return res.status(200).send({ arabic: arabic });
 });
 
-// Para propósitos de testing, exportamos la app y las funciones
-module.exports = { app, arabicToRoman, romanToArabic };
 
-// Iniciar el servidor (solo si el script se ejecuta directamente, no durante los tests)
+// Estructura Vercel-Compatible:
+// Si el archivo se ejecuta directamente (npm start), escucha en el puerto 3000.
+// Si es importado (por Vercel), exporta 'app' para que Vercel lo gestione.
+
 if (require.main === module) {
-    app.listen(port, () => {
-        console.log(`Servidor de números romanos corriendo en http://localhost:${port}`);
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`Server is running locally on http://localhost:${PORT}`);
     });
 }
+
+// ESTO ES LO CRUCIAL PARA VERCEL: Exportar la instancia de la aplicación
+module.exports = app;
