@@ -1,0 +1,36 @@
+name: Pruebas y Control de Calidad
+
+# Dispara este workflow en cada push a la rama master
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    # Ejecuta en el último sistema operativo estable de Ubuntu
+    runs-on: ubuntu-latest
+
+    strategy:
+      # Matriz de versiones de Node.js para asegurar compatibilidad
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+    - name: Checkout del código
+      uses: actions/checkout@v4
+
+    - name: Configurar Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm' # Usa cache para acelerar la instalación de dependencias
+
+    - name: Instalar dependencias
+      run: npm install
+
+    - name: Ejecutar Pruebas de Jest
+      # Ejecutamos el comando que usamos localmente, pero ahora en GitHub
+      run: npm test -- --coverage
+      # Nota: 'npm test' es un alias de 'npx jest --coverage' definido en package.json
