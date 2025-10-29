@@ -58,6 +58,18 @@ function romanToArabic(roman) {
 
 // --- Endpoints de la API ---
 
+// Endpoint raíz para dar la bienvenida y mostrar instrucciones (Vercel fix)
+app.get('/', (req, res) => {
+    res.status(200).json({
+        message: "API de Conversión de Números Romanos",
+        instructions: {
+            arabic_to_roman: "/a2r?arabic=<numero_arabigo_entre_1_y_3999>",
+            roman_to_arabic: "/r2a?roman=<numero_romano>"
+        },
+        info: "Accede a /a2r o /r2a con el parámetro de query correspondiente."
+    });
+});
+
 // Endpoint para Arábigo a Romano
 app.get('/a2r', (req, res) => {
     const arabic = parseInt(req.query.arabic, 10);

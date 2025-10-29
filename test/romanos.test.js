@@ -1,7 +1,8 @@
 const request = require('supertest');
-const { app, arabicToRoman, romanToArabic } = require('../romanos');
+const app = require('../romanos'); // Importa la aplicación Express
+const { arabicToRoman, romanToArabic } = require('../converter'); // Importa la lógica pura
 
-// --- PRUEBAS UNITARIAS (Lógica Pura) ---
+// --- PRUEBAS UNITARIAS (Lógica Pura: converter.js) ---
 
 describe('Funciones de Conversión', () => {
 
@@ -25,12 +26,14 @@ describe('Funciones de Conversión', () => {
             expect(arabicToRoman(3999)).toBe('MMMCMXCIX');
         });
 
-        test('Debe devolver null o un mensaje para números fuera de rango (0)', () => {
-            expect(arabicToRoman(0)).toBe('El número debe estar entre 1 y 3999.');
+        // ✅ CORRECCIÓN: Prueba que la función LANCE un error (throw)
+        test('Debe lanzar un error para el número 0', () => {
+            expect(() => arabicToRoman(0)).toThrow('El número debe ser un entero entre 1 y 3999.');
         });
         
-        test('Debe devolver null o un mensaje para números fuera de rango (4000+)', () => {
-            expect(arabicToRoman(4000)).toBe('El número debe estar entre 1 y 3999.');
+        // ✅ CORRECCIÓN: Prueba que la función LANCE un error (throw)
+        test('Debe lanzar un error para números fuera de rango (4000+)', () => {
+            expect(() => arabicToRoman(4000)).toThrow('El número debe ser un entero entre 1 y 3999.');
         });
     });
 
@@ -47,13 +50,15 @@ describe('Funciones de Conversión', () => {
             expect(romanToArabic('XLIX')).toBe(49);
             expect(romanToArabic('MCMXCIV')).toBe(1994);
         });
-
+        
+        // ✅ CORRECCIÓN: Prueba que la función LANCE un error (throw)
         test('Debe rechazar entrada inválida (caracteres no romanos)', () => {
-            expect(romanToArabic('IXZ')).toBe('Formato romano inválido.');
+            expect(() => romanToArabic('IXZ')).toThrow('El formato del número romano es inválido o excede el rango.');
         });
 
+        // ✅ CORRECCIÓN: Prueba que la función LANCE un error (throw)
         test('Debe rechazar entrada con patrón no permitido (ej: IIII)', () => {
-            expect(romanToArabic('IIII')).toBe('Formato romano inválido.');
+            expect(() => romanToArabic('IIII')).toThrow('El formato del número romano es inválido o excede el rango.');
         });
     });
 });
