@@ -1,21 +1,17 @@
 {
-  "name": "tateti-random",
-  "version": "1.0.0",
-  "main": "tateti-random.js",
-  "scripts": {
-    "start": "node tateti-random.js",
-    "test": "jest"
-  },
-  "dependencies": {
-    "express": "^4.18.2"
-  },
-  "devDependencies": {
-    "jest": "^29.7.0"
-  },
-  "jest": {
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "/.vercel/"
-    ]
-  }
+ "name": "numeros-romanos-api",
+ "version": "1.0.0",
+ "description": "API para conversión de números romanos y arábigos.",
+ "main": "romanos.js",
+ "scripts": {
+   "start": "node romanos.js",
+   "test": "jest --coverage"
+ },
+ "dependencies": {
+   "express": "^4.18.2"
+ },
+ "devDependencies": {
+   "jest": "^29.7.0",
+   "supertest": "^6.3.3"
+ }
 }
