@@ -16,27 +16,123 @@ app.use(cors({
 app.use(express.json());
 // Endpoint para la raíz (Interfaz de usuario simple)
 app.get('/', (req, res) => {
-    // HTML para una pequeña interfaz de prueba
+    // HTML para una pequeña interfaz de prueba con los colores pastel solicitados
     res.send(`
         <!DOCTYPE html>
         <html lang="es">
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Convertidor Árabigo ↔ Romano</title>
+            <title>Convertidor Árabigo ↔ Romano | Pastel</title>
             <style>
-                body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #f4f4f9; }
-                .container { display: flex; gap: 30px; padding: 20px; }
-                .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); width: 300px; text-align: center; }
-                h1 { color: #333; margin-bottom: 5px; }
-                p { color: #666; margin-bottom: 30px; }
-                input[type="text"] { width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-                button { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: background-color 0.3s; color: white; }
-                .a2r button { background-color: #5b42f3; }
-                .a2r button:hover { background-color: #4a34c5; }
-                .r2a button { background-color: #1abc9c; }
-                .r2a button:hover { background-color: #159c82; }
-                .response-box { margin-top: 15px; padding: 10px; border-radius: 6px; background-color: #f0f8ff; border: 1px solid #cceeff; min-height: 20px; word-wrap: break-word; }
+                /* Estilos Generales y Layout */
+                body { 
+                    font-family: 'Inter', sans-serif; 
+                    display: flex; 
+                    justify-content: center; 
+                    align-items: center; 
+                    min-height: 100vh; 
+                    margin: 0; 
+                    background-color: #f3f0ff; /* Fondo lila muy claro (pastel) */
+                    color: #333; 
+                }
+                .container { 
+                    display: flex; 
+                    flex-direction: row; 
+                    gap: 30px; 
+                    padding: 30px; 
+                    flex-wrap: wrap; 
+                    justify-content: center;
+                }
+                .card { 
+                    /* Aseguramos que las tarjetas tengan un tamaño fijo para ser rectangulares e iguales */
+                    width: 350px; 
+                    min-height: 380px; /* Altura mínima para igualar ambas tarjetas */
+                    background: #ffffff; 
+                    padding: 40px 30px; 
+                    border-radius: 12px; 
+                    box-shadow: 0 8px 15px rgba(168, 144, 245, 0.2); /* Sombra con el color lila */
+                    text-align: center; 
+                    border: 1px solid #e0e0e0;
+                    box-sizing: border-box; /* Importante para que padding no afecte el ancho total */
+                }
+                h1 { 
+                    color: #a890f5; /* Título principal en lila pastel */
+                    margin-bottom: 5px; 
+                    font-size: 26px;
+                }
+                h3 {
+                    color: #6a53b5; /* Subtítulo lila oscuro */
+                    margin-top: 0;
+                }
+                p { 
+                    color: #777; 
+                    margin-bottom: 30px; 
+                    font-size: 15px;
+                }
+
+                /* Campos de entrada y Botones */
+                input[type="text"] { 
+                    width: 100%; 
+                    padding: 12px; 
+                    margin-bottom: 20px; 
+                    border: 1px solid #dcdcdc; 
+                    border-radius: 8px; 
+                    box-sizing: border-box; 
+                    background-color: #fff;
+                    color: #333;
+                    transition: border-color 0.3s;
+                }
+                input[type="text"]:focus {
+                    border-color: #a890f5; /* Borde de enfoque lila */
+                    outline: none;
+                }
+                
+                button { 
+                    width: 100%; 
+                    padding: 14px; 
+                    border: none; 
+                    border-radius: 8px; 
+                    cursor: pointer; 
+                    font-size: 17px; 
+                    font-weight: bold; 
+                    transition: background-color 0.3s, box-shadow 0.3s; 
+                    color: white; 
+                    background-color: #79d2a3; /* Botón en verde esmeralda pastel */
+                    box-shadow: 0 4px 0 #5fba87; /* Sombra inferior */
+                }
+                button:active {
+                    transform: translateY(2px);
+                    box-shadow: 0 2px 0 #5fba87;
+                }
+                button:hover { 
+                    background-color: #68c091; /* Verde esmeralda ligeramente más oscuro al pasar el ratón */
+                }
+
+                /* Caja de Respuesta */
+                .response-box { 
+                    margin-top: 20px; 
+                    padding: 15px; 
+                    border-radius: 8px; 
+                    min-height: 20px; 
+                    word-wrap: break-word; 
+                    font-weight: bold;
+                    text-align: left;
+                    font-size: 14px;
+                    border-left: 5px solid; /* Borde de color para status */
+                }
+                /* Estilos para Respuesta OK (Verde) */
+                .response-box[style*="e6ffe6"] { 
+                    background-color: #f0fff0; 
+                    border-color: #79d2a3; /* Verde pastel en el borde */
+                    color: #4a9e70;
+                }
+                /* Estilos para Respuesta Error (Lila/Rojo) */
+                .response-box[style*="ffe6e6"] { 
+                    background-color: #fff0f0; 
+                    border-color: #e74c3c;
+                    color: #c0392b;
+                }
             </style>
             <script>
                 async function convert(endpoint, inputId, outputId) {
@@ -60,21 +156,18 @@ app.get('/', (req, res) => {
                             } else if (data.arabic) {
                                 outputElement.innerHTML = \`**Arábigo:** \${data.arabic}\`;
                             }
-                            outputElement.style.backgroundColor = '#e6ffe6';
-                            outputElement.style.borderColor = '#4CAF50';
+                            // Usamos el style attribute para que CSS lo detecte
+                            outputElement.setAttribute('style', 'background-color: #e6ffe6; border-color: #4CAF50;');
                         } else if (response.status === 400) {
                             outputElement.innerHTML = \`**Error:** \${data.error}\`;
-                            outputElement.style.backgroundColor = '#ffe6e6';
-                            outputElement.style.borderColor = '#f44336';
+                            outputElement.setAttribute('style', 'background-color: #ffe6e6; border-color: #f44336;');
                         } else {
                             outputElement.innerHTML = 'Error desconocido en la API.';
-                            outputElement.style.backgroundColor = '#ffdddd';
-                            outputElement.style.borderColor = '#ff0000';
+                            outputElement.setAttribute('style', 'background-color: #ffdddd; border-color: #ff0000;');
                         }
                     } catch (error) {
                         outputElement.innerHTML = \`Error de conexión: \${error.message}\`;
-                        outputElement.style.backgroundColor = '#ffdddd';
-                        outputElement.style.borderColor = '#ff0000';
+                        outputElement.setAttribute('style', 'background-color: #ffdddd; border-color: #ff0000;');
                     }
                 }
             </script>
@@ -83,20 +176,20 @@ app.get('/', (req, res) => {
             <div class="container">
                 <div class="card">
                     <h1>Convertidor Árabigo ↔ Romano</h1>
-                    <p>Utilizando los endpoints de la API en el servidor Express.</p>
+                    <p>Utilizando los endpoints de la API REST.</p>
                     <div class="a2r">
-                        <h3>Árabigo a Romano</h3>
+                        <h3>Conversión: Árabigo a Romano</h3>
                         <input type="text" id="arabicInput" placeholder="Introduce un número (1-3999)">
                         <button onclick="convert('/a2r', 'arabicInput', 'romanOutput')">Convertir a Romano</button>
-                        <div id="romanOutput" class="response-box"></div>
+                        <div id="romanOutput" class="response-box">Esperando entrada...</div>
                     </div>
                 </div>
                 <div class="card">
                     <div class="r2a">
-                        <h3>Romano a Arábigo</h3>
+                        <h3>Conversión: Romano a Arábigo</h3>
                         <input type="text" id="romanInput" placeholder="INTRODUCE UN NÚMERO ROMANO (EJ: MCMXCIV)">
                         <button onclick="convert('/r2a', 'romanInput', 'arabicOutput')">Convertir a Arábigo</button>
-                        <div id="arabicOutput" class="response-box"></div>
+                        <div id="arabicOutput" class="response-box">Esperando entrada...</div>
                     </div>
                 </div>
             </div>
@@ -105,18 +198,17 @@ app.get('/', (req, res) => {
     `);
 });
 
-// Endpoint para convertir Árabigo a Romano
-app.get('/a2r', (req, res) => {
-    // Si el parámetro 'arabic' no está presente o no es numérico, parseInt lo convierte a NaN
-    const num = parseInt(req.query.arabic); 
+// Endpoint para convertir Romano a Arábigo
+app.get('/r2a', (req, res) => {
+    // ...
+    const roman = req.query.roman || '';
     
     try {
-        // arabicToRoman contiene la lógica de validación de rango (1-3999) y NaN
-        const roman = arabicToRoman(num);
-        res.status(200).json({ roman });
+        // <<-- AQUÍ ESTÁ LA CONVERSIÓN A MAYÚSCULAS QUE HACE QUE NO FALLE -->>
+        const arabic = romanToArabic(roman.toUpperCase()); 
+        // ...
     } catch (e) {
-        // Captura el error de validación y devuelve el mensaje EXACTO de converter.js con status 400
-        res.status(400).json({ error: e.message });
+    // ...
     }
 });
 
@@ -126,14 +218,15 @@ app.get('/r2a', (req, res) => {
     const roman = req.query.roman || '';
     
     try {
-        // romanToArabic contiene la lógica de validación de formato y rango
-        const arabic = romanToArabic(roman.toUpperCase());
+        // romanToArabic ahora valida y lanza un error si hay minúsculas o formato incorrecto.
+        const arabic = romanToArabic(roman); // <<-- ¡AQUÍ YA NO ESTÁ EL .toUpperCase()!
         res.status(200).json({ arabic });
     } catch (e) {
         // Captura el error de validación y devuelve el mensaje EXACTO de converter.js con status 400
         res.status(400).json({ error: e.message });
     }
 });
+
 
 // Exportar la instancia de Express
 module.exports = app;
