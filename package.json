@@ -1,18 +1,18 @@
 {
- "name": "numeros-romanos-api",
- "version": "1.0.0",
- "description": "API para conversión de números romanos y arábigos.",
- "main": "romanos.js",
- "scripts": {
-  "start": "node romanos.js",
-  "test": "jest --coverage"
- },
- "dependencies": {
-  "cors": "^2.8.5",
-  "express": "^4.18.2"
- },
- "devDependencies": {
-  "jest": "^29.7.0",
-  "supertest": "^6.3.3"
- }
+	"name": "numeros-romanos-api",
+	"version": "1.0.0",
+	"description": "API para conversión de números romanos y arábigos.",
+	"main": "romanos.js",
+	"scripts": {
+		"start": "node romanos.js",
+		"test": "jest --coverage"
+	},
+	"dependencies": {
+		"cors": "^2.8.5",
+		"express": "^4.18.2"
+	},
+	"devDependencies": {
+		"jest": "^29.7.0",
+		"supertest": "^6.3.3"
+	}
 }

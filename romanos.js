@@ -6,14 +6,12 @@ const app = express();
 // Importar la lógica de conversión desde el módulo local
 const { arabicToRoman, romanToArabic } = require('./converter'); 
 
-// --- Middleware (Configuración CORS Explícita y Abierta) ---
-// CRÍTICO para el evaluador: Permite peticiones GET desde cualquier origen.
-app.use(cors({
-    origin: '*', // Permite solicitudes desde cualquier origen (necesario para el evaluador)
-    methods: 'GET', // Solo permite el método GET
-    allowedHeaders: ['Content-Type'],
-}));
-app.use(express.json());
+// --- Middleware (Configuración CORS Simple) ---
+// El uso simple de cors() es suficiente y necesario para el entorno.
+app.use(cors());
+
+app.use(express.json()); 
+
 // Endpoint para la raíz (Interfaz de usuario simple)
 app.get('/', (req, res) => {
     // HTML para una pequeña interfaz de prueba con los colores pastel solicitados
@@ -198,35 +196,40 @@ app.get('/', (req, res) => {
     `);
 });
 
-// Endpoint para convertir Romano a Arábigo
-app.get('/r2a', (req, res) => {
-    // ...
-    const roman = req.query.roman || '';
+// Endpoint para convertir Árabigo a Romano
+app.get('/a2r', (req, res) => {
+    // 1. Obtener el valor como string
+    const arabicString = req.query.arabic;
+
+    // 2. Validación estricta: si no es un string de dígitos, forzar el error de formato
+    if (arabicString !== undefined && !/^\d+$/.test(arabicString)) {
+         return res.status(400).json({ error: "El número debe ser un entero entre 1 y 3999." });
+    }
+
+    // 3. Si pasó la validación de formato (o si el parámetro está ausente), convertir a entero
+    const num = parseInt(arabicString); 
     
     try {
-        // <<-- AQUÍ ESTÁ LA CONVERSIÓN A MAYÚSCULAS QUE HACE QUE NO FALLE -->>
-        const arabic = romanToArabic(roman.toUpperCase()); 
-        // ...
+        const roman = arabicToRoman(num);
+        res.status(200).json({ roman });
     } catch (e) {
-    // ...
+        res.status(400).json({ error: e.message });
     }
 });
 
 // Endpoint para convertir Romano a Arábigo
 app.get('/r2a', (req, res) => {
-    // Si el parámetro 'roman' no existe, usamos un string vacío, el cual falla en romanToArabic
+    // Si el parámetro 'roman' no existe, usamos un string vacío, el cual será validado en converter.js
     const roman = req.query.roman || '';
     
     try {
-        // romanToArabic ahora valida y lanza un error si hay minúsculas o formato incorrecto.
-        const arabic = romanToArabic(roman); // <<-- ¡AQUÍ YA NO ESTÁ EL .toUpperCase()!
+        // Se llama a romanToArabic directamente con la entrada original.
+        const arabic = romanToArabic(roman);
         res.status(200).json({ arabic });
     } catch (e) {
         // Captura el error de validación y devuelve el mensaje EXACTO de converter.js con status 400
         res.status(400).json({ error: e.message });
     }
 });
-
-
 // Exportar la instancia de Express
 module.exports = app;

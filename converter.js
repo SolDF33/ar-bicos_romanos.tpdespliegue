@@ -59,8 +59,8 @@ function romanToArabic(roman) {
 
     let result = 0;
     
-    // Simple validación de caracteres
-    if (!/^[IVXLCDM]+$/i.test(roman)) {
+    // VALIDACIÓN ESTRICTA: Solo acepta MAYÚSCULAS [IVXLCDM]. 
+    if (!/^[IVXLCDM]+$/.test(roman)) {
         throw new Error(invalidRomanError);
     }
 
@@ -76,14 +76,13 @@ function romanToArabic(roman) {
         }
     }
 
-    // Comprobación de validez (verifica que el romano generado a partir del resultado
-    // coincida con la entrada original para evitar casos como 'IIII' o 'IL').
+    // Comprobación de validez (la doble conversión es la validación más estricta de formato romano)
     try {
-        if (arabicToRoman(result) !== roman || result > 3999 || result < 1) {
-             throw new Error(invalidRomanError);
+        if (arabicToRoman(result) !== roman) {
+            throw new Error(invalidRomanError);
         }
     } catch (e) {
-        // Capturamos el error de rango lanzado por arabicToRoman si es necesario.
+        // Capturamos el error de rango/conversión y devolvemos el error genérico.
         throw new Error(invalidRomanError);
     }
 
